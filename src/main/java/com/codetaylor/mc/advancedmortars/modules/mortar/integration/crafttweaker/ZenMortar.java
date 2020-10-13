@@ -10,6 +10,7 @@ import crafttweaker.api.item.IIngredient;
 import crafttweaker.api.item.IItemStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.nbt.NBTTagCompound;
 import stanhebben.zenscript.annotations.ZenClass;
 import stanhebben.zenscript.annotations.ZenMethod;
 
@@ -118,7 +119,14 @@ public class ZenMortar {
           for (int i = 0; i < this.inputs.length; i++) {
             result.clear();
             List<ItemStack> matchingStacks = InputHelper.getMatchingStacks(this.inputs[i], result);
-            ItemStack[] array = matchingStacks.toArray(new ItemStack[matchingStacks.size()]);
+            ItemStack[] array = matchingStacks.stream().map(itemStack -> {
+              NBTTagCompound tag = itemStack.serializeNBT();
+              if (!tag.hasKey("ForgeCaps")) {
+                tag.setTag("ForgeCaps", new NBTTagCompound());
+                return new ItemStack(tag);
+              }
+              return itemStack;
+            }).toArray(ItemStack[]::new);
             ingredients[i] = Ingredient.fromStacks(array);
           }
 
